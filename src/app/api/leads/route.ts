@@ -1,5 +1,4 @@
-import { NextResponse } from "next-auth/next"; // No, wait, just next/server
-import { NextRequest } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
