@@ -1,0 +1,60 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id       String @id @default(cuid())
+  name     String?
+  email    String @unique
+  password String
+  role     String @default("MEMBER") // ADMIN or MEMBER
+
+  leadsAssigned Lead[]
+  activities    Activity[]
+  notes         Note[]
+}
+
+model Lead {
+  id         String   @id @default(cuid())
+  name       String
+  email      String
+  phone      String?
+  status     String   @default("NEW") // NEW, CONTACTED, QUALIFIED, LOST, WON
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  assignedToId String?
+  assignedTo   User?   @relation(fields: [assignedToId], references: [id])
+
+  notes      Note[]
+  activities Activity[]
+}
+
+model Note {
+  id        String   @id @default(cuid())
+  content   String
+  createdAt DateTime @default(now())
+
+  leadId String
+  lead   Lead   @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id])
+}
+
+model Activity {
+  id          String   @id @default(cuid())
+  action      String // e.g., "Created lead", "Changed status to QUALIFIED"
+  createdAt   DateTime @default(now())
+
+  leadId String
+  lead   Lead   @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id])
+}

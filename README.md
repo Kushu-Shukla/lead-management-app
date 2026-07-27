@@ -1,36 +1,109 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Digital Heroes - Lead Platform
 
-## Getting Started
+This is a modern lead management platform built for the Digital Heroes training task.
 
-First, run the development server:
+## Tech Stack
+* **Framework:** Next.js 15 (App Router)
+* **Database:** SQLite with Prisma ORM
+* **Authentication:** NextAuth.js (Credentials Provider)
+* **Styling:** Tailwind CSS
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Getting Started Locally
+
+1. **Install Dependencies:**
+   ```bash
+   npm install
+   ```
+
+2. **Setup Database:**
+   ```bash
+   npx prisma db push
+   npx prisma generate
+   ```
+
+3. **Seed the Database** (Creates test admin/member accounts):
+   ```bash
+   npm install -D tsx
+   npx tsx prisma/seed.ts
+   ```
+
+4. **Run the Development Server:**
+   ```bash
+   npm run dev
+   ```
+   Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+## Demo Accounts
+* **Admin:** `admin@digitalheroes.com` / `password123`
+* **Member:** `member@digitalheroes.com` / `password123`
+
+## API Documentation
+
+### `POST /api/leads`
+Creates a new lead. Unauthenticated (used by the public capture form).
+
+**Request Body:**
+```json
+{
+  "name": "John Doe",
+  "email": "john@example.com",
+  "phone": "555-1234"
+}
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+**Response (201 Created):**
+```json
+{
+  "data": {
+    "id": "cuid...",
+    "name": "John Doe",
+    "email": "john@example.com",
+    "phone": "555-1234",
+    "status": "NEW",
+    "createdAt": "..."
+  }
+}
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### `GET /api/leads`
+Retrieves a paginated list of leads. Requires Authentication.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+**Query Parameters:**
+* `page` (default: 1)
+* `limit` (default: 10)
+* `status` (optional filter)
 
-## Learn More
+**Response (200 OK):**
+```json
+{
+  "data": [
+    {
+      "id": "cuid...",
+      "name": "John Doe",
+      "email": "john@example.com",
+      "status": "NEW"
+    }
+  ],
+  "meta": {
+    "total": 1,
+    "page": 1,
+    "limit": 10,
+    "totalPages": 1
+  }
+}
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Deployment Instructions
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+To deploy this live (e.g., to Vercel or Render):
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. **Push to GitHub:** Commit this repository and push it to a new public GitHub repo.
+2. **Database for Production:** SQLite works well locally, but on Vercel (serverless), it becomes read-only on every request. Before deploying to Vercel, you should provision a free PostgreSQL database (e.g., using Supabase or Neon).
+   * Update `prisma/schema.prisma` provider to `"postgresql"`.
+   * Add the Postgres `DATABASE_URL` to your Vercel Environment Variables.
+3. **Deploy on Vercel:**
+   * Go to Vercel.com and import your GitHub repo.
+   * Add `NEXTAUTH_SECRET="your_random_secret_string"` in Vercel Environment Variables.
+   * Add `NEXTAUTH_URL="https://your-vercel-domain.vercel.app"` in Environment Variables.
+   * Modify the Vercel Build Command to: `npx prisma generate && npx prisma db push && next build`
+   * Click Deploy!
